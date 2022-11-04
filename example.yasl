@@ -1,0 +1,12 @@
+const bytearray = __require_c__('bytearray')
+
+const x = bytearray()
+
+const y =  bytearray("abc")
+
+const z = bytearray("12345")
+
+echo x + y
+echo y + z
+echo z + y
+

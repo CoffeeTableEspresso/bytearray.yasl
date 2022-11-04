@@ -1,0 +1,10 @@
+name = "bytearray"
+authors = [ "CoffeeTableEspresso <coffeetableespresso@gmail.com>" ]
+version = "v0.1.0"
+license = "MIT"
+
+[build]
+sources = [ "bytearray.c" ]
+scripts = [ "bytearray.yasl" ]
+
+[deps]
