@@ -1,7 +1,9 @@
 #include <yasl/yasl.h>
 #include <yasl/yasl_aux.h>
 
+#include <ctype.h>
 #include <string.h>
+#include <stdio.h>
 
 #define BYTEARRAY_PRE "bytearray"
 #define BYTEARRAY_NAME BYTEARRAY_PRE
@@ -60,7 +62,7 @@ static int YASL_bytearray_new(struct YASL_State *S) {
 }
 
 static struct YASL_ByteArray *YASLX_checknbytearray(struct YASL_State *S, const char *name, unsigned n) {
-	return (struct YASL_ByteArray *)YASLX_checknuserdata(S, BYTEARRAY_NAME, name, n);
+    return (struct YASL_ByteArray *)YASLX_checknuserdata(S, BYTEARRAY_NAME, name, n);
 }
 
 static int YASL_bytearray_tostr(struct YASL_State *S) {
@@ -72,11 +74,38 @@ static int YASL_bytearray_tostr(struct YASL_State *S) {
 
     strcpy(buffer, "bytearray(");
     buffer_count += strlen("bytearray(");
-    memcpy(buffer + buffer_count, ba->bytes, ba->len);
-    buffer_count += ba->len;
+    for (size_t i = 0; i < ba->len; i++) {
+        const char curr = ba->bytes[i];
+        if (isprint(curr)) {
+            buffer[buffer_count++] = curr;
+        } else {
+            char tmp[3] = { '0', '0', '\0' };
+            sprintf(tmp + (curr < 16), "%x", curr);
+            buffer_size += 3;
+            buffer = realloc(buffer, buffer_size);
+            buffer[buffer_count++] = '\\';
+            buffer[buffer_count++] = 'x';
+            memcpy(buffer + buffer_count, tmp, 2);
+            buffer_count += 2;
+        }
+    }
+
     strcpy(buffer + buffer_count, ")");
 
     YASL_pushlstr(S, buffer, buffer_size);
+    return 1;
+}
+
+static int YASL_bytearray_tolist(struct YASL_State *S) {
+    struct YASL_ByteArray *ba = YASLX_checknbytearray(S, "bytearray.tolist", 0);
+
+    YASL_pushlist(S);
+
+    for (size_t i = 0; i < ba->len; i++) {
+        YASL_pushint(S, (unsigned char)ba->bytes[i]);
+        YASL_listpush(S);
+    }
+
     return 1;
 }
 
@@ -105,6 +134,25 @@ static int YASL_bytearray___add(struct YASL_State *S) {
     return 1;
 }
 
+#define DEF_GET_FUNCTION(n) \
+static int YASL_bytearray_getint##n(struct YASL_State *S) { \
+    struct YASL_ByteArray *ba = YASLX_checknbytearray(S, "bytearray.getint" #n, 0); \
+    yasl_int index = YASLX_checknint(S, "bytearray.getint" #n, 1); \
+\
+    if (index + n / 8 > ba->len) { \
+        YASL_print_err(S, "ValueError: invalid index %d.\n", (int)index); \
+        YASL_throw_err(S, YASL_VALUE_ERROR); \
+    } \
+\
+    YASL_pushint(S, *(int##n##_t*)(ba->bytes + index)); \
+    return 1; \
+}
+
+DEF_GET_FUNCTION(8)
+DEF_GET_FUNCTION(16)
+DEF_GET_FUNCTION(32)
+DEF_GET_FUNCTION(64)
+
 int YASL_load_dyn_lib(struct YASL_State *S) {
     YASL_pushtable(S);
     YASL_registermt(S, BYTEARRAY_PRE);
@@ -121,6 +169,26 @@ int YASL_load_dyn_lib(struct YASL_State *S) {
 
     YASL_pushlit(S, "__add");
     YASL_pushcfunction(S, YASL_bytearray___add, 2);
+    YASL_tableset(S);
+
+    YASL_pushlit(S, "tolist");
+    YASL_pushcfunction(S, YASL_bytearray_tolist, 1);
+    YASL_tableset(S);
+
+    YASL_pushlit(S, "getint8");
+    YASL_pushcfunction(S, YASL_bytearray_getint8, 2);
+    YASL_tableset(S);
+
+    YASL_pushlit(S, "getint16");
+    YASL_pushcfunction(S, YASL_bytearray_getint16, 2);
+    YASL_tableset(S);
+
+    YASL_pushlit(S, "getint32");
+    YASL_pushcfunction(S, YASL_bytearray_getint32, 2);
+    YASL_tableset(S);
+
+    YASL_pushlit(S, "getint64");
+    YASL_pushcfunction(S, YASL_bytearray_getint64, 2);
     YASL_tableset(S);
 
     YASL_pushcfunction(S, YASL_bytearray_new, 1);

@@ -1,4 +1,6 @@
-const bytearray = __require_c__('bytearray')
+
+# const bytearray = __require_c__('bytearray')
+const bytearray = require('bytearray')
 
 const x = bytearray()
 
@@ -9,4 +11,16 @@ const z = bytearray("12345")
 echo x + y
 echo y + z
 echo z + y
+
+const n = bytearray("\x12\0\0\0\0\0\0\0");
+
+echo n
+
+echo len n
+echo n->getint8(0)
+echo n->getint16(0)
+echo n->getint32(0)
+echo n->getint64(0)
+
+echo z -> tolist()
 
