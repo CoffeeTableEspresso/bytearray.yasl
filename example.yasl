@@ -1,6 +1,6 @@
 
-# const bytearray = __require_c__('bytearray')
-const bytearray = require('bytearray')
+const bytearray = __require_c__('./libbytearray.so')
+# const bytearray = require('./bytearray')
 
 const x = bytearray()
 
@@ -17,10 +17,17 @@ const n = bytearray("\x12\0\0\0\0\0\0\0");
 echo n
 
 echo len n
-echo n->getint8(0)
-echo n->getint16(0)
-echo n->getint32(0)
-echo n->getint64(0)
+echo n->geti8(0)
+echo n->geti16(0)
+echo n->geti32(0)
+echo n->geti64(0)
 
 echo z -> tolist()
+
+const f = io.open('/home/thiabaud/Documents/yasl-lang/yasl/sample.bytes', 'r')->read('a')
+
+const b = bytearray(f)
+
+echo b->getu8(0)
+echo b->geti8(0)
 
