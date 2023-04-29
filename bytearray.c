@@ -176,59 +176,26 @@ int YASL_load_dyn_lib(struct YASL_State *S) {
     YASL_pushtable(S);
     YASL_registermt(S, BYTEARRAY_PRE);
 
+
+    struct YASLX_function functions[] = {
+        { "tostr", YASL_bytearray_tostr, 1 },
+        { "__len", YASL_bytearray___len, 1 },
+        { "__add", YASL_bytearray___add, 2 },
+        { "tolist", YASL_bytearray_tolist, 1 },
+        { "geti8", YASL_bytearray_geti8, 2 },
+        { "geti16", YASL_bytearray_geti16, 2 },
+        { "geti32", YASL_bytearray_geti32, 2 },
+        { "geti64", YASL_bytearray_geti64, 2 },
+        { "getu8", YASL_bytearray_getu8, 2 },
+        { "getu16", YASL_bytearray_getu16, 2 },
+        { "getu32", YASL_bytearray_getu32, 2 },
+        { "getu64", YASL_bytearray_getu64, 2 },
+        { "getchars", YASL_bytearray_getchars, 3 },
+        { NULL, NULL, 0 }
+    };
+
     YASL_loadmt(S, BYTEARRAY_PRE);
-
-    YASL_pushlit(S, "tostr");
-    YASL_pushcfunction(S, YASL_bytearray_tostr, 1);
-    YASL_tableset(S);
-
-    YASL_pushlit(S, "__len");
-    YASL_pushcfunction(S, YASL_bytearray___len, 1);
-    YASL_tableset(S);
-
-    YASL_pushlit(S, "__add");
-    YASL_pushcfunction(S, YASL_bytearray___add, 2);
-    YASL_tableset(S);
-
-    YASL_pushlit(S, "tolist");
-    YASL_pushcfunction(S, YASL_bytearray_tolist, 1);
-    YASL_tableset(S);
-
-    YASL_pushlit(S, "geti8");
-    YASL_pushcfunction(S, YASL_bytearray_geti8, 2);
-    YASL_tableset(S);
-
-    YASL_pushlit(S, "geti16");
-    YASL_pushcfunction(S, YASL_bytearray_geti16, 2);
-    YASL_tableset(S);
-
-    YASL_pushlit(S, "geti32");
-    YASL_pushcfunction(S, YASL_bytearray_geti32, 2);
-    YASL_tableset(S);
-
-    YASL_pushlit(S, "geti64");
-    YASL_pushcfunction(S, YASL_bytearray_geti64, 2);
-    YASL_tableset(S);
-
-    YASL_pushlit(S, "getu8");
-    YASL_pushcfunction(S, YASL_bytearray_getu8, 2);
-    YASL_tableset(S);
-
-    YASL_pushlit(S, "getu16");
-    YASL_pushcfunction(S, YASL_bytearray_getu16, 2);
-    YASL_tableset(S);
-
-    YASL_pushlit(S, "getu32");
-    YASL_pushcfunction(S, YASL_bytearray_getu32, 2);
-    YASL_tableset(S);
-
-    YASL_pushlit(S, "getu64");
-    YASL_pushcfunction(S, YASL_bytearray_getu64, 2);
-    YASL_tableset(S);
-
-    YASL_pushlit(S, "getchars");
-    YASL_pushcfunction(S, YASL_bytearray_getchars, 3);
-    YASL_tableset(S);
+    YASLX_tablesetfunctions(S, functions);
 
     YASL_pushcfunction(S, YASL_bytearray_new, 1);
 
