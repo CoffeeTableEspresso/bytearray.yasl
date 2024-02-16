@@ -176,7 +176,6 @@ int YASL_load_dyn_lib(struct YASL_State *S) {
     YASL_pushtable(S);
     YASL_registermt(S, BYTEARRAY_PRE);
 
-
     struct YASLX_function functions[] = {
         { "tostr", YASL_bytearray_tostr, 1 },
         { "__len", YASL_bytearray___len, 1 },
