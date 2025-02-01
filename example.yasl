@@ -22,12 +22,13 @@ echo n->geti16(0)
 echo n->geti32(0)
 echo n->geti64(0)
 
-echo z -> tolist()
+n->seti64(0, 1000)
+
+echo n
+
+echo z->tolist()
 
 const f = io.open('/home/thiabaud/Documents/yasl-lang/yasl/sample.bytes', 'r')->read('a')
 
 const b = bytearray(f)
-
-echo b->getu8(0)
-echo b->geti8(0)
 

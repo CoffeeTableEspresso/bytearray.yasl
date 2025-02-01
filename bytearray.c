@@ -8,6 +8,8 @@
 #define BYTEARRAY_PRE "bytearray"
 #define BYTEARRAY_NAME BYTEARRAY_PRE
 
+#define MSG_VALUE_ERROR "ValueError: "
+
 struct YASL_ByteArray {
     size_t len;
     size_t capacity;
@@ -134,6 +136,18 @@ static int YASL_bytearray___add(struct YASL_State *S) {
     return 1;
 }
 
+static int YASL_bytearray_getf64(struct YASL_State *S) {
+	struct YASL_ByteArray *ba = YASLX_checknbytearray(S, "bytearray.getf64", 0);
+	yasl_int index = YASLX_checknint(S, "bytearray.getf64", 1);
+
+	if (index + 8 > ba->len) {
+		YASLX_print_and_throw_err_value(S, "invalid index %d.", (int)index);
+	}
+
+	YASL_pushfloat(S, *(double *)(ba->bytes + index));
+	return 1;
+}
+
 #define DEF_GET_FUNCTION(n, type, prefix) \
 static int YASL_bytearray_get##prefix##n(struct YASL_State *S) { \
     struct YASL_ByteArray *ba = YASLX_checknbytearray(S, "bytearray.get" #prefix #n, 0); \
@@ -158,6 +172,31 @@ DEF_GET_FUNCTION(16, u, u)
 DEF_GET_FUNCTION(32, u, u)
 DEF_GET_FUNCTION(64, u, u)
 
+#define DEF_SET_FUNCTION(n, type, prefix) \
+static int YASL_bytearray_set##prefix##n(struct YASL_State *S) { \
+	struct YASL_ByteArray *ba = YASLX_checknbytearray(S, "bytearray.set" #prefix #n, 0); \
+	yasl_int index = YASLX_checknint(S, "bytearray.set" #prefix #n, 1); \
+	yasl_int value = YASLX_checknint(S, "bytearray.set" #prefix #n, 2); \
+\
+	if (index + n / 8 > ba->len) { \
+		YASL_print_err(S, "ValueError: invalid index %d.\n", (int)index); \
+		YASL_throw_err(S, YASL_VALUE_ERROR); \
+	} \
+\
+	*(type##int##n##_t*)(ba->bytes + index) = (type##int##n##_t)value; \
+	return 0; \
+}
+
+DEF_SET_FUNCTION(8, , i)
+DEF_SET_FUNCTION(16, , i)
+DEF_SET_FUNCTION(32, , i)
+DEF_SET_FUNCTION(64, , i)
+
+DEF_SET_FUNCTION(8, u, u)
+DEF_SET_FUNCTION(16, u, u)
+DEF_SET_FUNCTION(32, u, u)
+DEF_SET_FUNCTION(64, u, u)
+
 static int YASL_bytearray_getchars(struct YASL_State *S) {
     struct YASL_ByteArray *ba = YASLX_checknbytearray(S, "bytearray.getchars", 0);
     yasl_int index = YASLX_checknint(S, "bytearray.getchars", 1);
@@ -177,19 +216,28 @@ int YASL_load_dyn_lib(struct YASL_State *S) {
     YASL_registermt(S, BYTEARRAY_PRE);
 
     struct YASLX_function functions[] = {
-        { "tostr", YASL_bytearray_tostr, 1 },
-        { "__len", YASL_bytearray___len, 1 },
-        { "__add", YASL_bytearray___add, 2 },
-        { "tolist", YASL_bytearray_tolist, 1 },
-        { "geti8", YASL_bytearray_geti8, 2 },
-        { "geti16", YASL_bytearray_geti16, 2 },
-        { "geti32", YASL_bytearray_geti32, 2 },
-        { "geti64", YASL_bytearray_geti64, 2 },
-        { "getu8", YASL_bytearray_getu8, 2 },
-        { "getu16", YASL_bytearray_getu16, 2 },
-        { "getu32", YASL_bytearray_getu32, 2 },
-        { "getu64", YASL_bytearray_getu64, 2 },
-        { "getchars", YASL_bytearray_getchars, 3 },
+        { "tostr", &YASL_bytearray_tostr, 1 },
+        { "__len", &YASL_bytearray___len, 1 },
+        { "__add", &YASL_bytearray___add, 2 },
+        { "tolist", &YASL_bytearray_tolist, 1 },
+        { "getf64", &YASL_bytearray_getf64, 2 },
+        { "geti8", &YASL_bytearray_geti8, 2 },
+        { "geti16", &YASL_bytearray_geti16, 2 },
+        { "geti32", &YASL_bytearray_geti32, 2 },
+        { "geti64", &YASL_bytearray_geti64, 2 },
+        { "getu8", &YASL_bytearray_getu8, 2 },
+        { "getu16", &YASL_bytearray_getu16, 2 },
+        { "getu32", &YASL_bytearray_getu32, 2 },
+        { "getu64", &YASL_bytearray_getu64, 2 },
+        { "seti8", &YASL_bytearray_seti8, 3 },
+        { "seti16", &YASL_bytearray_seti16, 3 },
+        { "seti32", &YASL_bytearray_seti32, 3 },
+        { "seti64", &YASL_bytearray_seti64, 3 },
+        { "setu8", &YASL_bytearray_setu8, 3 },
+        { "setu16", &YASL_bytearray_setu16, 3 },
+        { "setu32", &YASL_bytearray_setu32, 3 },
+        { "setu64", &YASL_bytearray_setu64, 3 },
+        { "getchars", &YASL_bytearray_getchars, 3 },
         { NULL, NULL, 0 }
     };
 
